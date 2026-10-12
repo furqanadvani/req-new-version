@@ -1,0 +1,20 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() { return request.auth != null && firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid)); }
+
+    // Pilgrim passport scans: visitors may upload (image/PDF, under 8 MB) but only admins can open them.
+    match /registrations/{ref}/{file} {
+      allow create: if request.resource.size < 8 * 1024 * 1024
+                    && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Website media uploaded from the portal: public read, admin write.
+    // (Listed folder by folder so no rule ever opens the registrations folder.)
+    match /{folder}/{file=**} {
+      allow read: if folder in ['brand', 'packages', 'flyers', 'hero', 'media', 'services', 'team', 'gallery', 'certificates', 'uploads'];
+      allow write: if isAdmin() && folder != 'registrations';
+    }
+  }
+}

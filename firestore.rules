@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() { return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function str(v, max) { return v is string && v.size() <= max; }
+
+    // Public website content: anyone reads, only admins write.
+    match /hajjPackages/{id}   { allow read: if true; allow write: if isAdmin(); }
+    match /umrahPackages/{id}  { allow read: if true; allow write: if isAdmin(); }
+    match /services/{id}       { allow read: if true; allow write: if isAdmin(); }
+    match /testimonials/{id}   { allow read: if true; allow write: if isAdmin(); }
+    match /faqs/{id}           { allow read: if true; allow write: if isAdmin(); }
+    match /team/{id}           { allow read: if true; allow write: if isAdmin(); }
+    match /gallery/{id}        { allow read: if true; allow write: if isAdmin(); }
+    match /settings/{id}       { allow read: if true; allow write: if isAdmin(); }
+
+    // Website forms: visitors can only create; reading is admin-only.
+    match /queries/{id} {
+      allow create: if str(request.resource.data.name, 120) && str(request.resource.data.phone, 40)
+                    && request.resource.data.status == 'new'
+                    && (!('message' in request.resource.data) || str(request.resource.data.message, 3000));
+      allow read, update, delete: if isAdmin();
+    }
+    match /subscribers/{id} {
+      allow create: if str(request.resource.data.email, 200);
+      allow read, update, delete: if isAdmin();
+    }
+    match /registrations/{ref} {
+      allow create: if request.resource.data.ref == ref && request.resource.data.status == 'received'
+                    && request.resource.data.pilgrims is list && request.resource.data.pilgrims.size() <= 12;
+      allow read, update, delete: if isAdmin();
+    }
+    // Public tracking: fetch one by exact reference code; listing is not allowed.
+    match /registrationStatus/{ref} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create: if request.resource.data.ref == ref && request.resource.data.status == 'received';
+      allow update, delete: if isAdmin();
+    }
+
+    // Admin list: managed from the Firebase console only.
+    match /admins/{uid} { allow read: if request.auth != null && request.auth.uid == uid; allow write: if false; }
+  }
+}
