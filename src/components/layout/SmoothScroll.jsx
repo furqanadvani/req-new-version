@@ -6,7 +6,13 @@ import { prefersReducedMotion } from '@/utils/helpers';
 let lenis = null;
 export const scrollToTop = () => (lenis ? lenis.scrollTo(0, { immediate: true }) : window.scrollTo(0, 0));
 
-/** Lenis smooth scrolling on the public site (off for reduced motion and touch is native). */
+/** Stops page scrolling while a full-screen overlay (mobile menu, modal) is open. */
+export function lockScroll(on) {
+  if (lenis) (on ? lenis.stop() : lenis.start());
+  document.documentElement.style.overflow = on ? 'hidden' : '';
+}
+
+/** Lenis smooth scrolling on the public site (off for reduced motion). */
 export function SmoothScroll() {
   const { pathname } = useLocation();
   useEffect(() => {
