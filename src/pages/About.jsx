@@ -7,7 +7,7 @@ import { Testimonials, CtaBand } from '@/components/home';
 import { Seo, breadcrumbSchema, useCollection, useSettings, COLLECTIONS } from '@/utils';
 
 const VALUES = [
-  ['Ibada first', 'Every plan is judged by one question: does it leave the pilgrim free to focus on worship?'],
+  ['Ibadah first', 'Every plan is judged by one question: does it leave the pilgrim free to focus on worship?'],
   ['Scholars with the group', 'Ulama travel with us to guide each rite and answer masail in Urdu, on the spot.'],
   ['Honest prices', 'What is on the package page is what you pay. Changes by Saudi authorities are shown in writing.'],
   ['Families come back', 'Most of our pilgrims come through people who travelled with us before.'],
